@@ -1,4 +1,7 @@
-import React from 'react'
+import {
+  createElement,
+  Fragment,
+} from 'react'
 import PropTypes from 'prop-types'
 
 const ELLIPSIS_CHAR = '…'
@@ -7,21 +10,28 @@ const Content = ({
   visibleText,
   hiddenText,
 }) => (
-  <>
-    { visibleText }
-    { hiddenText && (
-      <>
-        <span
-          aria-hidden="true"
-          unselectable="on"
-          style={ {
+  createElement(
+    Fragment,
+    null,
+    visibleText,
+    hiddenText && createElement(
+      Fragment,
+      null,
+      createElement(
+        'span',
+        {
+          'aria-hidden': 'true',
+          unselectable: 'on',
+          style: {
             userSelect: 'none',
-          } }
-        >
-          { ELLIPSIS_CHAR }
-        </span>
-        <span
-          style={ {
+          },
+        },
+        ELLIPSIS_CHAR,
+      ),
+      createElement(
+        'span',
+        {
+          style: {
             width: '1px',
             height: '1px',
             margin: '-1px',
@@ -30,13 +40,12 @@ const Content = ({
             overflow: 'hidden',
             padding: 0,
             position: 'absolute',
-          } }
-        >
-          { hiddenText }
-        </span>
-      </>
-    )}
-  </>
+          },
+        },
+        hiddenText,
+      ),
+    ),
+  )
 )
 
 Content.propTypes = {
