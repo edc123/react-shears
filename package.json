@@ -1,0 +1,30 @@
+{
+  "name": "react-shears",
+  "version": "0.1",
+  "description": "Trim text with ease!",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edc123/react-shears.git"
+  },
+  "keywords": [
+    "react"
+  ],
+  "author": "Ed Cheng",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/edc123/react-shears/issues"
+  },
+  "homepage": "https://github.com/edc123/react-shears#readme",
+  "devDependencies": {
+    "prop-types": "^15.5.7",
+    "react": "^16.8.6"
+  },
+  "peerDependencies": {
+    "prop-types": "^15.5.7",
+    "react": ">=16.8.0"
+  }
+}
