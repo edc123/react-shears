@@ -1,9 +1,10 @@
 {
   "name": "react-shears",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Trim text with ease!",
-  "main": "src/index.js",
+  "main": "dist/react-shears.min.js",
   "scripts": {
+    "build": "rollup --config rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -11,7 +12,17 @@
     "url": "git+https://github.com/edc123/react-shears.git"
   },
   "keywords": [
-    "react"
+    "react",
+    "ellipsis",
+    "truncate",
+    "truncation",
+    "truncated",
+    "js",
+    "content",
+    "shorten",
+    "javascript",
+    "text",
+    "trim"
   ],
   "author": "Ed Cheng",
   "license": "MIT",
@@ -21,7 +32,13 @@
   "homepage": "https://github.com/edc123/react-shears#readme",
   "devDependencies": {
     "prop-types": "^15.5.7",
-    "react": "^16.8.6"
+    "react": "^16.8.6",
+    "rollup": "^1.0.0",
+    "rollup-plugin-babel": "^4.0.0-beta.0",
+    "rollup-plugin-uglify": "^6.0.1",
+    "@babel/core": "^7.0.0-beta.44",
+    "@babel/preset-env": "^7.0.0-beta.40",
+    "babel-core": "^7.0.0-bridge.0"
   },
   "peerDependencies": {
     "prop-types": "^15.5.7",

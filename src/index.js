@@ -2,10 +2,28 @@ import {
   createElement,
   useReducer,
   useEffect,
-  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
 } from 'react'
 import PropTypes from 'prop-types'
 import Content from './Content'
+ 
+// Simple fork of _.debounce
+function debounce(func, wait) {
+  let timeout
+  return function () {
+    const context = this
+    const args = arguments
+    const later = function () {
+      timeout = null
+      func.apply(context, args)
+    }
+ 
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
+}
 
 const useShears = ({
   text,
@@ -21,7 +39,7 @@ const useShears = ({
     binaryDone: false,
     done: false,
   }
-
+ 
   const reducer = (state, action) => {
     switch (action.type) {
       case 'RECEIVE_CONTAINER_DIMENSIONS':
@@ -55,45 +73,77 @@ const useShears = ({
         throw new Error()
     }
   }
-
+ 
   const [state, dispatch] = useReducer(reducer, initialState)
-
+ 
   let {
     min,
     max,
   } = state
-
+ 
   const {
     visibleText,
     hiddenText,
+    offsetWidth,
     offsetHeight,
     done,
     binaryDone,
   } = state
-
-  const container = useCallback((node) => {
-    if (node !== null && !done) {
+ 
+  const container = useRef(null)
+  const [isMounted, setIsMounted] = useState(false)
+ 
+  useLayoutEffect(() => {
+    if (!done) {
       dispatch({
         type: 'RECEIVE_CONTAINER_DIMENSIONS',
         payload: {
-          offsetWidth: node.getBoundingClientRect().width,
-          offsetHeight: node.getBoundingClientRect().height,
+          offsetWidth: container.current.getBoundingClientRect().width,
+          offsetHeight: container.current.getBoundingClientRect().height,
         },
       })
     }
   }, [max, done])
-
+ 
+  useLayoutEffect(() => {
+    setIsMounted(true)
+  }, [isMounted])
+ 
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      if (
+        done
+        && (
+          container
+          && container.current
+          && offsetWidth > 0
+          && container.current.getBoundingClientRect().width > 0
+          && container.current.getBoundingClientRect().width !== offsetWidth
+        )
+      ) {
+        dispatch({
+          type: 'CONTAINER_RESIZED',
+        })
+      }
+    }
+ 
+    window.addEventListener('resize', debounce(handleResize, 1000))
+    return () => {
+      window.removeEventListener('resize', debounce(handleResize, 1000))
+    }
+  })
+ 
   useEffect(() => {
-    const midpoint = (min + max + 1) >> 1 // eslint-disable-line no-bitwise
-
     if (offsetHeight > 0) {
       if (min < max && !binaryDone && !done) {
+        const midpoint = (min + max + 1) >> 1 // eslint-disable-line no-bitwise
+ 
         if (offsetHeight > maxHeight) {
           max = midpoint - 1
         } else {
           min = midpoint
         }
-
+ 
         dispatch({
           type: 'ITERATE_BINARY_SEARCH',
           payload: {
@@ -102,7 +152,7 @@ const useShears = ({
           },
         })
       }
-
+ 
       if (offsetHeight <= maxHeight && max < text.length && !done) {
         dispatch({
           type: 'ITERATE_STEP_SEARCH',
@@ -112,7 +162,7 @@ const useShears = ({
           },
         })
       }
-
+ 
       if (offsetHeight > maxHeight && binaryDone && !done) {
         dispatch({
           type: 'ITERATE_DONE',
@@ -122,7 +172,7 @@ const useShears = ({
           },
         })
       }
-
+ 
       if (offsetHeight <= maxHeight && max === text.length - 1) {
         dispatch({
           type: 'ITERATE_DONE',
@@ -133,18 +183,23 @@ const useShears = ({
       }
     }
   }, [offsetHeight])
-
-  return [container, visibleText, hiddenText, done]
+ 
+  return [container, visibleText, hiddenText, isMounted]
 }
-
+ 
 const Shears = ({
   maxHeight,
   text,
   tag,
   className,
 }) => {
-  const [container, visibleText, hiddenText, done] = useShears({ text, maxHeight })
-
+  const [
+    container,
+    visibleText,
+    hiddenText,
+    isMounted,
+  ] = useShears({ text, maxHeight })
+ 
   if (
     !text
     || !maxHeight
@@ -152,17 +207,16 @@ const Shears = ({
   ) {
     return text
   }
-
+ 
   return (
     createElement(
       tag,
       {
-        tabIndex: 0,
         style: {
           overflow: 'hidden',
           maxHeight,
-          opacity: done ? 1 : 0,
-          transition: 'opacity 0.2s',
+          opacity: isMounted ? 1 : 0,
+          transition: 'opacity 200ms',
         },
         className,
       },
@@ -182,17 +236,17 @@ const Shears = ({
     )
   )
 }
-
+ 
 Shears.propTypes = {
   maxHeight: PropTypes.number.isRequired,
   text: PropTypes.element.isRequired,
   tag: PropTypes.string,
   className: PropTypes.string,
 }
-
+ 
 Shears.defaultProps = {
   tag: 'div',
   className: '',
 }
-
+ 
 export default Shears

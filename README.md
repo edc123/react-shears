@@ -13,15 +13,15 @@ yarn add react-shears
 
 ```
 <Shears
-  maxHeight={ 42 }                         // Required: Pixel value (number)
-  text={ title }                           // Required: Some text to trim! (strictly strings only, no HTML)
-  tag="p"                                  // HTML tag name (string, optional - defaults to div)
-  className="stock-matrix__product-title"  // custom class (string, optional)
+  maxHeight={ 42 }     // Required: Pixel value (number)
+  text={ title }       // Required: Some text to trim! (strictly strings only, no HTML)
+  tag="p"              // HTML tag name (string, optional - defaults to div)
+  className="title"    // custom class (string, optional)
 />
 ```
 
 
-# v0.0.2 Release Notes
+# v0.0.3 Release Notes
+- dep free, and works for IE8+
 - TODO: allow for units in maxHeight
-- TODO: does not handle resize event. this is coming soon
 - TODO: needs to give more things as options, like the fade in effect
