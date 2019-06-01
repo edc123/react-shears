@@ -1,6 +1,6 @@
 {
   "name": "react-shears",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "Trim text with ease!",
   "main": "dist/react-shears.min.js",
   "scripts": {

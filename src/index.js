@@ -1,45 +1,37 @@
 import {
   createElement,
   useReducer,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from 'react'
 import PropTypes from 'prop-types'
 import Content from './Content'
- 
-// Simple fork of _.debounce
-function debounce(func, wait) {
+
+function debounce(callback, wait) {
   let timeout
-  return function () {
+  return (...args) => {
     const context = this
-    const args = arguments
-    const later = function () {
-      timeout = null
-      func.apply(context, args)
-    }
- 
     clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
+    timeout = setTimeout(() => callback.apply(context, args), wait)
   }
 }
 
 const useShears = ({
   text,
   maxHeight,
+  debounceDuration,
 }) => {
   const initialState = {
     max: text.length - 1,
     min: 0,
     visibleText: text,
     hiddenText: '',
-    offsetWidth: 0,
-    offsetHeight: 0,
-    binaryDone: false,
+    width: 0,
+    binarySearchDone: false,
     done: false,
   }
- 
+
   const reducer = (state, action) => {
     switch (action.type) {
       case 'RECEIVE_CONTAINER_DIMENSIONS':
@@ -52,98 +44,90 @@ const useShears = ({
         return {
           ...state,
           ...action.payload,
-          visibleText: `${text.slice(0, action.payload.max)}`,
+          visibleText: `${text.slice(0, action.payload.max).trim()}`,
           hiddenText: `${text.slice(action.payload.max)}`,
-          offsetHeight: 0,
         }
       case 'ITERATE_DONE':
         return {
           ...state,
           ...action.payload,
-          binaryDone: true,
+          binarySearchDone: true,
           done: true,
-          visibleText: `${text.slice(0, action.payload.max)}`,
+          visibleText: `${text.slice(0, action.payload.max).trim()}`,
           hiddenText: `${text.slice(action.payload.max)}`,
         }
-      case 'CONTAINER_RESIZED':
+      case 'RESET_STATE':
         return {
           ...initialState,
+          ...action.payload,
         }
       default:
         throw new Error()
     }
   }
- 
+
+  const container = useRef(null)
   const [state, dispatch] = useReducer(reducer, initialState)
- 
+  const [isMounted, setIsMounted] = useState(false)
+
   let {
     min,
     max,
   } = state
- 
+
   const {
     visibleText,
     hiddenText,
-    offsetWidth,
-    offsetHeight,
+    width,
     done,
-    binaryDone,
+    binarySearchDone,
   } = state
- 
-  const container = useRef(null)
-  const [isMounted, setIsMounted] = useState(false)
- 
+
+  useLayoutEffect(() => {
+    setIsMounted(true)
+  }, [isMounted])
+
   useLayoutEffect(() => {
     if (!done) {
       dispatch({
         type: 'RECEIVE_CONTAINER_DIMENSIONS',
         payload: {
-          offsetWidth: container.current.getBoundingClientRect().width,
-          offsetHeight: container.current.getBoundingClientRect().height,
+          width: container.current.getBoundingClientRect().width,
         },
       })
     }
   }, [max, done])
- 
+
   useLayoutEffect(() => {
-    setIsMounted(true)
-  }, [isMounted])
- 
+    dispatch({ type: 'RESET_STATE' })
+  }, [text])
+
   useLayoutEffect(() => {
     const handleResize = () => {
-      if (
-        done
-        && (
-          container
-          && container.current
-          && offsetWidth > 0
-          && container.current.getBoundingClientRect().width > 0
-          && container.current.getBoundingClientRect().width !== offsetWidth
-        )
-      ) {
-        dispatch({
-          type: 'CONTAINER_RESIZED',
-        })
+      if (done && container && container.current && container.current.getBoundingClientRect().width !== width) {
+        dispatch({ type: 'RESET_STATE' })
       }
     }
- 
-    window.addEventListener('resize', debounce(handleResize, 1000))
+
+    window.addEventListener('resize', debounce(handleResize, debounceDuration))
     return () => {
-      window.removeEventListener('resize', debounce(handleResize, 1000))
+      window.removeEventListener('resize', debounce(handleResize, debounceDuration))
     }
   })
- 
-  useEffect(() => {
-    if (offsetHeight > 0) {
-      if (min < max && !binaryDone && !done) {
+
+  useLayoutEffect(() => {
+    const { height } = container.current.getBoundingClientRect()
+
+    if (height > 0) {
+      if (min < max && !binarySearchDone && !done) {
         const midpoint = (min + max + 1) >> 1 // eslint-disable-line no-bitwise
- 
-        if (offsetHeight > maxHeight) {
+
+        if (height > maxHeight) {
           max = midpoint - 1
         } else {
           min = midpoint
         }
- 
+
         dispatch({
           type: 'ITERATE_BINARY_SEARCH',
           payload: {
@@ -152,18 +136,18 @@ const useShears = ({
           },
         })
       }
- 
-      if (offsetHeight <= maxHeight && max < text.length && !done) {
+
+      if (height <= maxHeight && (max < text.length - 1) && !done) {
         dispatch({
           type: 'ITERATE_STEP_SEARCH',
           payload: {
-            binaryDone: true,
+            binarySearchDone: true,
             max: max + 1,
           },
         })
       }
- 
-      if (offsetHeight > maxHeight && binaryDone && !done) {
+
+      if (height > maxHeight && binarySearchDone && !done) {
         dispatch({
           type: 'ITERATE_DONE',
           payload: {
@@ -172,8 +156,8 @@ const useShears = ({
           },
         })
       }
- 
-      if (offsetHeight <= maxHeight && max === text.length - 1) {
+
+      if (height <= maxHeight && max === text.length - 1) {
         dispatch({
           type: 'ITERATE_DONE',
           payload: {
@@ -182,41 +166,40 @@ const useShears = ({
         })
       }
     }
-  }, [offsetHeight])
- 
+  }, [max])
+
   return [container, visibleText, hiddenText, isMounted]
 }
- 
+
 const Shears = ({
   maxHeight,
   text,
   tag,
   className,
+  fadeInDuration,
+  debounceDuration,
 }) => {
   const [
     container,
     visibleText,
     hiddenText,
     isMounted,
-  ] = useShears({ text, maxHeight })
- 
-  if (
-    !text
-    || !maxHeight
-    || !visibleText
-  ) {
-    return text
-  }
- 
+  ] = useShears({ text, maxHeight, debounceDuration })
+
+  if (!text) return null
+
+  if (!maxHeight || !visibleText) return text
+
   return (
     createElement(
       tag,
       {
         style: {
           overflow: 'hidden',
+          height: '100%',
           maxHeight,
           opacity: isMounted ? 1 : 0,
-          transition: 'opacity 200ms',
+          transition: fadeInDuration ? `opacity ${fadeInDuration.toString()}ms` : '',
         },
         className,
       },
@@ -224,6 +207,9 @@ const Shears = ({
         'div',
         {
           ref: container,
+          style: {
+            height: '100%',
+          },
         },
         createElement(
           Content,
@@ -236,17 +222,21 @@ const Shears = ({
     )
   )
 }
- 
+
 Shears.propTypes = {
   maxHeight: PropTypes.number.isRequired,
   text: PropTypes.element.isRequired,
   tag: PropTypes.string,
   className: PropTypes.string,
+  fadeInDuration: PropTypes.number,
+  debounceDuration: PropTypes.number,
 }
- 
+
 Shears.defaultProps = {
   tag: 'div',
   className: '',
+  fadeInDuration: 0,
+  debounceDuration: 200,
 }
- 
+
 export default Shears

@@ -15,15 +15,17 @@ yarn add react-shears
 
 ```
 <Shears
-  maxHeight={ 42 }     // Required: Pixel value (number)
-  text={ title }       // Required: Some text to trim! (strictly strings only, no HTML)
-  tag="p"              // HTML tag name (string, optional - defaults to div)
-  className="title"    // custom class (string, optional)
+  maxHeight={ 42 }          // Required: Pixel value (number)
+  text={ title }            // Required: Some text to trim! (strictly strings only, no HTML)
+  tag="p"                   // HTML tag name (string, optional - defaults to div)
+  className="title"         // custom class (string, optional)
+  fadeInDuration={ 200 }    // time to fade in (number of ms, optional - defaults to 0)
+  debounceDuration={ 200 }  // time to fade in (number of ms, optional - defaults to 200)
 />
 ```
 
 
-# v0.0.3 Release Notes
-- dep free, and works for IE8+
-- TODO: allow for units in maxHeight
-- TODO: needs to give more things as options, like the fade in effect and debounce time
+# v1.0.0 Release Notes
+- added options for fade in and debounce durations
+- now dynamically updates with text prop change
+- performance improvements
