@@ -1,6 +1,6 @@
 {
   "name": "react-shears",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Trim text with ease!",
   "main": "dist/react-shears.min.js",
   "scripts": {
@@ -41,7 +41,6 @@
     "babel-core": "^7.0.0-bridge.0"
   },
   "peerDependencies": {
-    "prop-types": "^15.5.7",
     "react": ">=16.8.0"
   }
 }
