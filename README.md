@@ -1,5 +1,9 @@
 # react-shears
+[![npm](https://img.shields.io/npm/v/react-shears.svg)](https://www.npmjs.com/package/react-shears) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/react-shears.svg) [![GitHub stars](https://img.shields.io/github/stars/edc123/react-shears.svg?style=social)](https://github.com/edc123/react-shears)
+
 ✂️ Multiline ellipsis for text ... that refreshes on window resize. Just define a maximum height!
+
+![Demo with resizing browser](https://i.imgur.com/Jcf1bKF.gif)
 
 **react-shears** places an ellipsis (...) in your text! All you have to do is define a maximum height and the component takes care of the rest.
 
