@@ -3,12 +3,12 @@
 
 **react-shears** places an ellipsis (...) in your text! All you have to do is define a maximum height and the component takes care of the rest.
 
-### Other notable benefits
+### Other benefits
 - _Fits as much text in as possible._ This is because it uses a binary search as well as a per-character fitting algorithm.
 
 - _Accessible._ Text that is hidden is still visible to screen readers and the ellipsis is hidden away.
 
-- _Browser compatibility._ This component should work great for IE >= 10!
+- _Browser compatibility._ Supports IE >= 8 by default. If you use the built-in fade effect (fadeInDuration), it uses CSS `transition` which is IE >= 10.
 
 ---
 
@@ -24,6 +24,8 @@ yarn add react-shears
 # Example usage
 
 ```
+import Shears from 'react-shears'
+
 <Shears
   maxHeight={ 42 }
   text={ title }
