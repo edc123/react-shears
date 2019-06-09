@@ -1,3 +1,5 @@
+> **Under construction...**: Don't use this in production until this notice is removed! Ironing out some problems with some use cases.
+
 # react-shears
 [![npm](https://img.shields.io/npm/v/react-shears.svg)](https://www.npmjs.com/package/react-shears) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/react-shears.svg) [![GitHub stars](https://img.shields.io/github/stars/edc123/react-shears.svg?style=social)](https://github.com/edc123/react-shears)
 
